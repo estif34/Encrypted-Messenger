@@ -54,12 +54,12 @@ This is a secure messaging application built with Node.js and Socket.IO, impleme
 
 
 ## Project Structure
-encrypted-messenger/
+`encrypted-messenger/
 ├── lib.js           # Cryptographic primitives and Double Ratchet logic
 ├── messenger.js     # MessengerClient implementation
 ├── server.js        # Node.js server with Socket.IO logic
 ├── index.html       # Frontend for user interface
 ├── styles.css       # Styles for the frontend (if separate)
 ├── package.json     # Dependencies and project metadata
-└── README.md        # Project documentation
+└── README.md        # Project documentation`
 
