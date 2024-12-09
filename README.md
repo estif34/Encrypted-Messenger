@@ -26,11 +26,11 @@ This is a secure messaging application built with Node.js and Socket.IO, impleme
 
 ### Steps
 1. Clone the Repository
-   `git clone https://github.com/estif34/Encrypted-Messenger.git`
+   ```git clone https://github.com/estif34/Encrypted-Messenger.git```
 3. Install Dependencies
-   `npm install`
+   ```npm install```
 5. Run the Server
-   `node server.js`
+   ```node server.js```
 7. Run the Frontend
   - Open the index.html file in your preferred code editor.
   - Use a live server extension (e.g., in VS Code) to serve the frontend.
@@ -54,12 +54,14 @@ This is a secure messaging application built with Node.js and Socket.IO, impleme
 
 
 ## Project Structure
-`encrypted-messenger/
+```
+encrypted-messenger/
 ├── lib.js           # Cryptographic primitives and Double Ratchet logic
 ├── messenger.js     # MessengerClient implementation
 ├── server.js        # Node.js server with Socket.IO logic
 ├── index.html       # Frontend for user interface
 ├── styles.css       # Styles for the frontend (if separate)
 ├── package.json     # Dependencies and project metadata
-└── README.md        # Project documentation`
+└── README.md        # Project documentation
+```
 
