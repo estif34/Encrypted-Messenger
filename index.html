@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encrypted Messenger</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f3f4f6;
+            color: #333;
+        }
+        #container {
+            width: 90%;
+            max-width: 600px;
+            margin-top: 20px;
+            padding: 10px;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        #user-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 150px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            background-color: #fafafa;
+        }
+        #user-list li {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+        }
+        #user-list li:hover {
+            background-color: #f0f0f0;
+        }
+        #messages {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            height: 200px;
+            overflow-y: scroll;
+            border: 1px solid #ddd;
+            padding: 10px;
+            background-color: #fafafa;
+            margin-top: 10px;
+        }
+        #messages li {
+            margin-bottom: 10px;
+        }
+        #input-container {
+            display: flex;
+            margin-top: 10px;
+        }
+        #input-container input {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px 0 0 5px;
+        }
+        #input-container button {
+            padding: 10px;
+            border: none;
+            background-color: #007BFF;
+            color: white;
+            border-radius: 0 5px 5px 0;
+            cursor: pointer;
+        }
+        #input-container button:hover {
+            background-color: #0056b3;
+        }
+        #username-input-container {
+            display: flex;
+            margin-bottom: 10px;
+        }
+        #username-input-container input {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px 0 0 5px;
+        }
+        #username-input-container button {
+            padding: 10px;
+            border: none;
+            background-color: #28a745;
+            color: white;
+            border-radius: 0 5px 5px 0;
+            cursor: pointer;
+        }
+        #username-input-container button:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <h1>Encrypted Messenger</h1>
+    <div id="container">
+        <div id="username-input-container">
+            <input id="username-input" type="text" placeholder="Enter your username">
+            <button id="register-button">Register</button>
+        </div>
+        <h3>Online Users</h3>
+        <ul id="user-list"></ul>
+        <h3>Messages</h3>
+        <ul id="messages"></ul>
+        <div id="input-container">
+            <input id="message-input" type="text" placeholder="Type a message" disabled>
+            <button id="send-button" disabled>Send</button>
+        </div>
+    </div>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script>
+        const socket = io('http://localhost:3000');
+
+        const usernameInput = document.getElementById('username-input');
+        const registerButton = document.getElementById('register-button');
+        const userList = document.getElementById('user-list');
+        const messages = document.getElementById('messages');
+        const messageInput = document.getElementById('message-input');
+        const sendButton = document.getElementById('send-button');
+
+        let currentUsername = '';
+        let selectedUser = '';
+
+        function appendMessage(text) {
+            const li = document.createElement('li');
+            li.textContent = text;
+            messages.appendChild(li);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        function updateUserList(users) {
+            userList.innerHTML = '';
+            users.forEach(user => {
+                const li = document.createElement('li');
+                li.textContent = user;
+                li.onclick = () => {
+                    selectedUser = user;
+                    socket.emit('requestCertificate', { from: currentUsername, to: user });
+                    appendMessage(`Certificate requested from ${user}`);
+                };
+                userList.appendChild(li);
+            });
+        }
+
+        registerButton.addEventListener('click', () => {
+            const username = usernameInput.value.trim();
+            if (username) {
+                socket.emit('register', username);
+                currentUsername = username;
+                usernameInput.disabled = true;
+                registerButton.disabled = true;
+            }
+        });
+
+        sendButton.addEventListener('click', () => {
+            const message = messageInput.value.trim();
+            if (message && selectedUser) {
+                socket.emit('sendMessage', { from: currentUsername, to: selectedUser, message });
+                appendMessage(`You (to ${selectedUser}): ${message}`);
+                messageInput.value = '';
+            }
+        });
+
+        socket.on('registered', (data) => {
+            appendMessage('You are registered as ' + currentUsername);
+        });
+
+        socket.on('userList', (users) => {
+            console.log('Received updated user list:', users);
+            updateUserList(users);
+        });
+
+        socket.on('userJoined', (user) => {
+            appendMessage(user + ' has joined.');
+            socket.emit('requestUserList');
+        });
+
+        socket.on('receiveMessage', (data) => {
+            appendMessage(`${data.from}: ${data.message}`);
+        });
+
+        socket.on('certificate', (data) => {
+            appendMessage(`Certificate received from ${data.to}`);
+            messageInput.disabled = false;
+            sendButton.disabled = false;
+        });
+    </script>
+</body>
+</html>
